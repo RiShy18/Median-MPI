@@ -22,6 +22,7 @@ void writePPM(char* file, int width, int height, int max, const RGB *image)
       const RGB *p = image+i;
       fprintf(fd, "%d %d %d ", p->r, p->g, p->b);
     }
+  fclose(fd);
 }
 
 
@@ -41,10 +42,10 @@ RGB * readPPM(char* file, int* width, int* height, int* max)
   n = fscanf(fd,"%[^\n] ",b);
   if(b[0]!='P'|| b[1] != '3')
     {
-      printf("%s is not a PPM file!\n",file); 
-      //exit(0);
+      
+      exit(0);
     }
-  printf("%s is a PPM file\n", file);
+  
   n = fscanf(fd, "%c",&c);
   while(c == '#') 
     {
@@ -56,7 +57,7 @@ RGB * readPPM(char* file, int* width, int* height, int* max)
   n = fscanf(fd, "%d %d %d", width, height, max);
   assert(n==3);
 
-  printf("%d x %d image, max value= %d\n", *width, *height, *max);
+  //printf("%d x %d image, max value= %d\n", *width, *height, *max);
 
   // size of image
   int size = *width*(*height);

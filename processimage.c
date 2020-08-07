@@ -10,7 +10,7 @@ unsigned char median(unsigned char *a, int size);
 
 
 
-RGB *processImage(int width, int height, RGB *image, int windowSize, char* filterType)
+RGB *processImage(int width, int height, RGB *image, int windowSize)
 {
 	int i, j, k, l;
 	if (windowSize == 1){
@@ -45,19 +45,13 @@ RGB *processImage(int width, int height, RGB *image, int windowSize, char* filte
 			unsigned char filteredElementG;
 			unsigned char filteredElementB;
 
-			if (strcmp(filterType, "A") == 0){
-				filteredElementR = median(windowR, start);
-				filteredElementG = median(windowG, start);
-				filteredElementB = median(windowB, start);
-			}
-			if (strcmp(filterType, "M") == 0){
-				quickSort(windowR, 0, start);
-				quickSort(windowG, 0, start);
-				quickSort(windowB, 0, start);
-				filteredElementR = windowR[start/2];
-				filteredElementG = windowR[start/2];
-				filteredElementB = windowR[start/2];
-			}
+			quickSort(windowR, 0, start);
+			quickSort(windowG, 0, start);
+			quickSort(windowB, 0, start);
+			filteredElementR = median(windowR, start);
+			filteredElementG = median(windowG, start);
+			filteredElementB = median(windowB, start);
+			
 
 			filtered[i*width + j].r = filteredElementR;
 			filtered[i*width + j].g = filteredElementG;
@@ -113,11 +107,12 @@ unsigned char partition(unsigned char *a, int l, int r) {
 
 unsigned char median(unsigned char *a, int size){
 	int med = 0;
-	med= a[size/2];
-	//for (int i = 0; i < size; i++){
-	//	sum += a[i];
-	//}
-	//sum /= size;
+	if(size%2==1){
+		med=(a[size/2]+a[(size/2)+1])/2;
+	}
+	else{
+		med= a[size/2];
+	}
 	unsigned char median = (unsigned char) med;
 	return median;
 }

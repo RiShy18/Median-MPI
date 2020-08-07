@@ -3,8 +3,25 @@
 #include <mpi.h>
 #include <stdio.h>
 #include <time.h>
+#include <string.h>
 int main(int argc, char** argv)
 {
+	/*
+	const char* msg1= "convert ";
+	const char* name= argv[1];
+	const char* msg2= " foo.ppm"
+
+	char* order;
+	order = malloc(strlen(msg1)+1+4);
+	strcpy(order, msg1);
+	strcat(order, name);
+	strcat(order, msg2);
+	system(order);
+	*/
+
+	//Dark Magic
+	//system("mogrify -format *.jpg foo.ppm");
+	//system("convert foo.ppm -compress none bar.ppm");
 	
 	// parsed image, and filtered image
 	RGB *image, *filteredImage;
@@ -20,7 +37,7 @@ int main(int argc, char** argv)
 	// loop variables
 	int dest, source;
 	int offset;
-	
+
 	
 	
 	// MPI boilerplate
@@ -36,16 +53,21 @@ int main(int argc, char** argv)
     //printf("Hello from %s processor %d of %d\n", processor_name, my_rank, p);
 
 	clock_t time;
-	time=clock();
+	
 
 	int tag = 0;
 	int windowSize = atoi(argv[3]);
 	
+	
 	// Process 0 parses the PPM file and distributes size attributes
 	if (my_rank == 0){
+		time=clock();
+		char msg1[150];
+		sprintf(msg1, "./conv.sh %s", argv[1]);
+		system(msg1);
 		printf("Hello from %s processor %d of %d\n", processor_name, my_rank, p);
 		printc("I am preparing the image\n", 2);
-		image = readPPM(argv[1], &global_width, &global_height, &max);
+		image = readPPM("out.ppm", &global_width, &global_height, &max);
 		offset = 0;
 		for (dest = 1; dest < p; dest++){
 			int rowsToCompute = global_height/p;
@@ -131,7 +153,7 @@ int main(int argc, char** argv)
 	
 	
 	// Process image	
-	filteredImage = processImage(width, height, image, windowSize, argv[4]);
+	filteredImage = processImage(width, height, image, windowSize);
 	
 	
 	// Send processed data back to P0
@@ -169,15 +191,35 @@ int main(int argc, char** argv)
 	if (my_rank == 0){
 		printf("Hello from %s processor %d of %d\n", processor_name, my_rank, p);
 		printc("I writting the new image\n", 1);
-		writePPM(argv[2], global_width, global_height, max, filteredImage);
+		writePPM("output.ppm", global_width, global_height, max, filteredImage);
 		free(image);
+		//fclose("output.ppm");
 		time=clock()-time;
 		double timeTaken = ((double)time)/CLOCKS_PER_SEC;
-		printf("Resultado del tiempo %f\n", timeTaken);
+		char msg2[100];
+		sprintf(msg2, "./redo.sh %s", argv[2]);
+		system(msg2);
+		char stat1[100];
+		sprintf(msg2, "Resultado del tiempo %.4f\n", timeTaken);
+		printc("-------------------------------------------\n", 5);
+		printc("-------------------------------------------\n", 5);
+		printc("-------------------------------------------\n", 5);
+		printc("-----------------STADISTICS----------------\n", 5);
+		printc("-------------------------------------------\n", 5);
+		printc("-------------------------------------------\n", 5);
+		printc("-------------------------------------------\n", 5);
+		printc(msg2, 5);
+		//system("rm out.ppm");
+		system("rm out.ppm");
+		system("rm output.ppm");
+		printf("\033[1;31m");
 		system("ping -c 1 node1");
 		//system("ping -c 1 node0");
 	}
 
 	MPI_Finalize();
+
+	
+
 	return(0);
 }

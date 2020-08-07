@@ -12,7 +12,7 @@ typedef struct {
 RGB * readPPM(char* file, int* width, int* height, int* max);
 void writePPM(char* file, int width, int height, int max, const RGB *image);
 
-RGB* processImage(int width, int height, RGB *image, int windowSize, char* filterType);
+RGB* processImage(int width, int height, RGB *image, int windowSize);
 void quickSort(unsigned char *a, int l, int r);
 unsigned char median(unsigned char *a, int size);
 
