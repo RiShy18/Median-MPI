@@ -188,7 +188,7 @@ int main(int argc, char** argv)
 		char stat1[100];
 		sprintf(msg2, "Time summary = %.4f s\n", timeTaken);
 		char msg3[100];
-		sprintf(msg3, "Global Bandwidth = %.4f Mb/s\n", MBsec/imageSize);
+		sprintf(msg3, "Global Bandwidth = %.4f Mb/ms\n", MBsec/imageSize);
 
 		printc("-------------------------------------------\n", 5);
 		printc("-------------------------------------------\n", 5);
