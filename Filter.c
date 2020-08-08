@@ -1,41 +1,41 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include "a1.h"
+#include "header.h"
 #include <string.h>
 
 void quickSort(unsigned char *a, int l, int r);
-unsigned char partition(unsigned char *a, int l, int r);
+unsigned char fragment(unsigned char *a, int l, int r);
 unsigned char median(unsigned char *a, int size);
 
 
 
 
-RGB *processImage(int width, int height, RGB *image, int windowSize)
+RGB *processImage(int width, int height, RGB *image, int imageSize)
 {
 	int i, j, k, l;
-	if (windowSize == 1){
+	if (imageSize == 1){
 		return image;
 	}
 	
-	// Process pixel by pixel
+	// Process all channels per pixel
 	RGB *filtered = (RGB*)malloc(height*width*sizeof(RGB));
 	for (i=0; i < height; i++){
 		for (j=0; j < width; j++){
-			unsigned char *windowR = (unsigned char*) malloc(sizeof(unsigned char)*windowSize*windowSize);
-			unsigned char *windowB = (unsigned char*) malloc(sizeof(unsigned char)*windowSize*windowSize);
-			unsigned char *windowG = (unsigned char*) malloc(sizeof(unsigned char)*windowSize*windowSize);
+			unsigned char *channelR = (unsigned char*) malloc(sizeof(unsigned char)*imageSize*imageSize);
+			unsigned char *channelB = (unsigned char*) malloc(sizeof(unsigned char)*imageSize*imageSize);
+			unsigned char *channelG = (unsigned char*) malloc(sizeof(unsigned char)*imageSize*imageSize);
 			
 			int start = 0;
-			int left = i - windowSize / 2;
-			int right = i + windowSize / 2;
-			int up = j - windowSize / 2;
-			int down = j + windowSize / 2;
+			int left = i - imageSize / 2;
+			int right = i + imageSize / 2;
+			int up = j - imageSize / 2;
+			int down = j + imageSize / 2;
 			for (k = left; k < right; k++){
 				for (l = up; l < down; l++){
 					if (k >= 0 && l >= 0 && k < height && l < width){
-						windowR[start] = image[k*width + l].r;
-						windowG[start] = image[k*width + l].g;
-						windowB[start] = image[k*width + l].b;
+						channelR[start] = image[k*width + l].r;
+						channelG[start] = image[k*width + l].g;
+						channelB[start] = image[k*width + l].b;
 						start++;
 					}
 				}
@@ -45,12 +45,12 @@ RGB *processImage(int width, int height, RGB *image, int windowSize)
 			unsigned char filteredElementG;
 			unsigned char filteredElementB;
 
-			quickSort(windowR, 0, start);
-			quickSort(windowG, 0, start);
-			quickSort(windowB, 0, start);
-			filteredElementR = median(windowR, start);
-			filteredElementG = median(windowG, start);
-			filteredElementB = median(windowB, start);
+			quickSort(channelR, 0, start);
+			quickSort(channelG, 0, start);
+			quickSort(channelB, 0, start);
+			filteredElementR = median(channelR, start);
+			filteredElementG = median(channelG, start);
+			filteredElementB = median(channelB, start);
 			
 
 			filtered[i*width + j].r = filteredElementR;
@@ -78,7 +78,7 @@ void quickSort(unsigned char *a, int l, int r)
 
 	if( l < r )
 	{
-		j = partition( a, l, r);
+		j = fragment( a, l, r);
 		quickSort( a, l, j-1);
 		quickSort( a, j+1, r);
 	}
@@ -87,7 +87,7 @@ void quickSort(unsigned char *a, int l, int r)
 
 
 
-unsigned char partition(unsigned char *a, int l, int r) {
+unsigned char fragment(unsigned char *a, int l, int r) {
 	unsigned char pivot, t;
 	int i, j;
 	pivot = a[l];

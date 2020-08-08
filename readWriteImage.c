@@ -2,31 +2,9 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "a1.h"
+#include "header.h"
 
-void writePPM(char* file, int width, int height, int max, const RGB *image)
-{
-  int i;
-
-  // open file for writing
-  FILE *fd;
-  fd = fopen(file, "w");
-  
-  // output the header
-  fprintf(fd, "P3\n");  
-  fprintf(fd, "%d %d\n%d\n", width, height, max);
-  
-  // write the image
-  for(i = 0; i < height*width; i++)
-    {
-      const RGB *p = image+i;
-      fprintf(fd, "%d %d %d ", p->r, p->g, p->b);
-    }
-  fclose(fd);
-}
-
-
-RGB * readPPM(char* file, int* width, int* height, int* max)
+RGB * readImage(char* file, int* width, int* height, int* max)
 {
   /* Read a PPM P3 image from a file into a buffer.  Return the
      buffer, width, height, and the max value in the image. */
@@ -76,6 +54,30 @@ RGB * readPPM(char* file, int* width, int* height, int* max)
   
   return image;
 }
+
+void writeImage(char* file, int width, int height, int max, const RGB *image)
+{
+  int i;
+
+  // open file for writing
+  FILE *fd;
+  fd = fopen(file, "w");
+  
+  // output the header
+  fprintf(fd, "P3\n");  
+  fprintf(fd, "%d %d\n%d\n", width, height, max);
+  
+  // write the image
+  for(i = 0; i < height*width; i++)
+    {
+      const RGB *p = image+i;
+      fprintf(fd, "%d %d %d ", p->r, p->g, p->b);
+    }
+  fclose(fd);
+}
+
+
+
 
 /**
  * Prints text in color

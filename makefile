@@ -2,8 +2,8 @@ CFLAGS=-g -O2 -Wall
 
 CC = mpicc
 
-PROGRAM_NAME= ppmf
-OBJS = main.o readwriteppm.o processimage.o 
+PROGRAM_NAME= filtro
+OBJS = filtro.o readWriteImage.o Filter.o 
 
 $(PROGRAM_NAME): $(OBJS)
 	$(CC) -o $@ $? 
