@@ -18,8 +18,8 @@ int main(int argc, char** argv)
 	// process information
 	int myRank, p;
 	
-	// loop variables
-	int dest, source;
+	// global send info
+	int where, source;
 	int offset;
 
 	
@@ -53,14 +53,14 @@ int main(int argc, char** argv)
 		printc("I am preparing the image\n", 2);
 		image = readImage("out.ppm", &globalWidth, &globalHeight, &max);
 		offset = 0;
-		for (dest = 1; dest < p; dest++){
+		for (where = 1; where < p; where++){
 			int rowsToCompute = globalHeight/p;
-			if (dest < globalHeight % p)
+			if (where < globalHeight % p)
 				rowsToCompute++;
 			offset += rowsToCompute;
 			
 			// Need imageSize/2 (or 2*imageSize/2) , if not, it explodes
-			if (dest == p-1){
+			if (where == p-1){
 				rowsToCompute += (imageSize/2);
 			}
 			else{
@@ -69,7 +69,7 @@ int main(int argc, char** argv)
 			Dimension *dim = (Dimension*) malloc(sizeof(Dimension));
 			dim->width = globalWidth;
 			dim->height = rowsToCompute;
-			MPI_Send(dim, 2, MPI_INT, dest, tag, MPI_COMM_WORLD);
+			MPI_Send(dim, 2, MPI_INT, where, tag, MPI_COMM_WORLD);
 		}
 		
 		// Dimentionate a new image of the original image size
@@ -102,19 +102,19 @@ int main(int argc, char** argv)
 			offset += 1;
 		}
 		offset += (imageSize/2);
-		for (dest = 1; dest < p; dest++){
+		for (where = 1; where < p; where++){
 			int rowsToCompute = globalHeight/p;
-			if (dest < globalHeight % p)
+			if (where < globalHeight % p)
 				rowsToCompute++;
 
-			if (dest == p-1){
+			if (where == p-1){
                                 rowsToCompute += (imageSize/2);
                         }
                         else{
                                 rowsToCompute += (imageSize/2)*2;
                         }
 
-			if (dest == p-1){
+			if (where == p-1){
 				offset -= (imageSize/2)*2;
 			}
 			else{
@@ -122,7 +122,7 @@ int main(int argc, char** argv)
 			}
 		
 			
-			MPI_Send(image + offset*width, 3*rowsToCompute*width, MPI_UNSIGNED_CHAR, dest, tag, MPI_COMM_WORLD);
+			MPI_Send(image + offset*width, 3*rowsToCompute*width, MPI_UNSIGNED_CHAR, where, tag, MPI_COMM_WORLD);
 			offset += rowsToCompute;
 		}		
 	}
@@ -180,11 +180,16 @@ int main(int argc, char** argv)
 		//fclose("output.ppm");
 		time=clock()-time;
 		double timeTaken = ((double)time)/CLOCKS_PER_SEC;
+		double MBsec   = ((double)(imageSize)) * 1000000.0 / (1024.0*1024.0);
+
 		char msg2[100];
 		sprintf(msg2, "./redo.sh %s", argv[2]);
 		system(msg2);
 		char stat1[100];
-		sprintf(msg2, "Resultado del tiempo %.4f\n", timeTaken);
+		sprintf(msg2, "Time summary = %.4f s\n", timeTaken);
+		char msg3[100];
+		sprintf(msg3, "Global Bandwidth = %.4f Mb/s\n", MBsec/imageSize);
+
 		printc("-------------------------------------------\n", 5);
 		printc("-------------------------------------------\n", 5);
 		printc("-------------------------------------------\n", 5);
@@ -193,11 +198,13 @@ int main(int argc, char** argv)
 		printc("-------------------------------------------\n", 5);
 		printc("-------------------------------------------\n", 5);
 		printc(msg2, 5);
+		printc(msg3, 3);
+
 		//system("rm out.ppm");
 		system("rm out.ppm");
 		system("rm output.ppm");
 		printf("\033[1;31m");
-		system("ping -c 1 node1");
+		system("ping -c 3 node1");
 		//system("ping -c 1 node0");
 	}
 
