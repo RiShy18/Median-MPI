@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <time.h>
 #include <string.h>
+#include <math.h>
+
 int main(int argc, char** argv)
 {
 	
@@ -40,7 +42,7 @@ int main(int argc, char** argv)
 	
 
 	int tag = 0;
-	int imageSize = atoi(argv[3]);
+	int kernelSize = atoi(argv[3]);
 	
 	
 	// Process 0 parses the image and reads its attributes
@@ -59,12 +61,12 @@ int main(int argc, char** argv)
 				rowsToCompute++;
 			offset += rowsToCompute;
 			
-			// Need imageSize/2 (or 2*imageSize/2) , if not, it explodes
+			// Need kernelSize/2 (or 2*kernelSize/2) , if not, it explodes
 			if (where == p-1){
-				rowsToCompute += (imageSize/2);
+				rowsToCompute += (kernelSize/2);
 			}
 			else{
-				rowsToCompute += (imageSize/2)*2;
+				rowsToCompute += (kernelSize/2)*2;
 			}
 			Dimension *dim = (Dimension*) malloc(sizeof(Dimension));
 			dim->width = globalWidth;
@@ -78,7 +80,7 @@ int main(int argc, char** argv)
 		if (globalHeight % p != 0){
 			height += 1;
 		}
-		height += (imageSize/2);
+		height += (kernelSize/2);
 	}
 
 	// assembly image dimensions per process
@@ -101,24 +103,24 @@ int main(int argc, char** argv)
 		if (globalHeight % p != 0){
 			offset += 1;
 		}
-		offset += (imageSize/2);
+		offset += (kernelSize/2);
 		for (where = 1; where < p; where++){
 			int rowsToCompute = globalHeight/p;
 			if (where < globalHeight % p)
 				rowsToCompute++;
 
 			if (where == p-1){
-                                rowsToCompute += (imageSize/2);
+                                rowsToCompute += (kernelSize/2);
                         }
                         else{
-                                rowsToCompute += (imageSize/2)*2;
+                                rowsToCompute += (kernelSize/2)*2;
                         }
 
 			if (where == p-1){
-				offset -= (imageSize/2)*2;
+				offset -= (kernelSize/2)*2;
 			}
 			else{
-				offset -= (imageSize/2)*2;
+				offset -= (kernelSize/2)*2;
 			}
 		
 			
@@ -137,19 +139,19 @@ int main(int argc, char** argv)
 	
 	
 	// Filter the image
-	filteredImage = processImage(width, height, image, imageSize);
+	filteredImage = processImage(width, height, image, kernelSize, argv[4]);
 	
 	
 	// All send progress back de P0
 	if (myRank != 0 && myRank != p-1){
 		printf("Hello from %s processor %d of %d\n", processor_name, myRank, p);
 		printc("Sending Info to P0\n", 4);
-		MPI_Send(image + (imageSize/2)*width, (height-2*(imageSize/2))*width*3, MPI_UNSIGNED_CHAR, 0, tag, MPI_COMM_WORLD);
+		MPI_Send(image + (kernelSize/2)*width, (height-2*(kernelSize/2))*width*3, MPI_UNSIGNED_CHAR, 0, tag, MPI_COMM_WORLD);
 	}
 	else if (myRank == p-1){
 		printf("Hello from %s processor %d of %d\n", processor_name, myRank, p);
 		printc("Sending Info to P0\n", 4);
-		MPI_Send(image + (imageSize/2)*width, (height-(imageSize/2))*width*3, MPI_UNSIGNED_CHAR, 0, tag, MPI_COMM_WORLD);
+		MPI_Send(image + (kernelSize/2)*width, (height-(kernelSize/2))*width*3, MPI_UNSIGNED_CHAR, 0, tag, MPI_COMM_WORLD);
 	}
 
 	else{
@@ -180,7 +182,8 @@ int main(int argc, char** argv)
 		//fclose("output.ppm");
 		time=clock()-time;
 		double timeTaken = ((double)time)/CLOCKS_PER_SEC;
-		double MBsec   = ((double)(imageSize)) * 1000000.0 / (1024.0*1024.0);
+		int imSize = height * width;
+		double MBsec   = ((double)(imSize)) * 1000000.0 / (1024.0*1024.0);
 
 		char msg2[100];
 		sprintf(msg2, "./redo.sh %s", argv[2]);
@@ -188,7 +191,7 @@ int main(int argc, char** argv)
 		char stat1[100];
 		sprintf(msg2, "Time summary = %.4f s\n", timeTaken);
 		char msg3[100];
-		sprintf(msg3, "Global Bandwidth = %.4f Mb/ms\n", MBsec/imageSize);
+		sprintf(msg3, "Chunck Bandwidth = %.4f B/s\n", MBsec/timeTaken);
 
 		printc("-------------------------------------------\n", 5);
 		printc("-------------------------------------------\n", 5);

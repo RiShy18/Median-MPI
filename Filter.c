@@ -2,15 +2,19 @@
 #include <stdio.h>
 #include "header.h"
 #include <string.h>
+#include <math.h>
+
+#define PI 3.14159265
 
 void quickSort(unsigned char *a, int l, int r);
 unsigned char fragment(unsigned char *a, int l, int r);
 unsigned char median(unsigned char *a, int size);
+unsigned char mean(unsigned char *a, int size);
+unsigned char gauss(unsigned char *a, int size, int sigma);
 
 
 
-
-RGB *processImage(int width, int height, RGB *image, int imageSize)
+RGB *processImage(int width, int height, RGB *image, int imageSize, char* Filter)
 {
 	int i, j, k, l;
 	if (imageSize == 1){
@@ -45,12 +49,28 @@ RGB *processImage(int width, int height, RGB *image, int imageSize)
 			unsigned char filteredElementG;
 			unsigned char filteredElementB;
 
-			quickSort(channelR, 0, start);
-			quickSort(channelG, 0, start);
-			quickSort(channelB, 0, start);
-			filteredElementR = median(channelR, start);
-			filteredElementG = median(channelG, start);
-			filteredElementB = median(channelB, start);
+			if (strcmp(Filter, "M")==0){
+				quickSort(channelR, 0, start);
+				quickSort(channelG, 0, start);
+				quickSort(channelB, 0, start);
+				filteredElementR = median(channelR, start);
+				filteredElementG = median(channelG, start);
+				filteredElementB = median(channelB, start);
+			}
+
+			if (strcmp(Filter, "A") == 0){
+				filteredElementR = mean(channelR, start);
+				filteredElementG = mean(channelG, start);
+				filteredElementB = mean(channelB, start);
+			}
+			
+			if (strcmp(Filter, "G") == 0){
+				filteredElementR = gauss(channelR, start, 5);
+				filteredElementG = gauss(channelG, start, 5);
+				filteredElementB = gauss(channelB, start, 5);
+			}
+
+			
 			
 
 			filtered[i*width + j].r = filteredElementR;
@@ -115,4 +135,24 @@ unsigned char median(unsigned char *a, int size){
 	}
 	unsigned char median = (unsigned char) med;
 	return median;
+}
+
+unsigned char mean(unsigned char *a, int size){
+	int sum = 0;
+	for (int i= 0; i < size; i++){
+		sum += a[i];
+	}
+	sum /= size;
+	unsigned char mean = (unsigned char) sum;
+	return mean;
+}
+
+unsigned char gauss(unsigned char* a, int size, int sigma){
+	float sum=0;
+	for (int i=0; i < size; i++){
+		sum= exp( -(a[i])/(2 * sigma * sigma)) / (sigma * sqrt(2*3.141592654));
+		unsigned char gauss= (unsigned char) sum;
+	}
+	unsigned char gauss= (unsigned char) size;
+	return gauss;
 }
